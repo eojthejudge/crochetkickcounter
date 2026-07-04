@@ -1,8 +1,19 @@
 #!/usr/bin/env python3
 import argparse
+import os
 import re
 import select
 import sys
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
+try:
+    import sounddevice as sd
+except ImportError:
+    sd = None
 
 try:
     from evdev import InputDevice, ecodes, list_devices
@@ -66,6 +77,7 @@ def main():
     parser.add_argument("--decrement-button", default=None, help="Optional button event code to decrement the counter.")
     parser.add_argument("--start", type=int, default=0, help="Starting counter value.")
     parser.add_argument("--goal", type=int, help="Optional goal count to display.")
+    parser.add_argument("--audio", action="store_true", help="Play a short beep whenever the counter increases.")
     parser.add_argument("--verbose", action="store_true", help="Log raw events for debugging.")
 
     args = parser.parse_args()
@@ -117,6 +129,25 @@ def main():
         print(f"Decrement button: {decrement_name} ({decrement_code})")
     if args.goal is not None:
         print(f"Goal: {args.goal}")
+
+    def play_beep():
+        if not args.audio:
+            return
+        try:
+            if os.name == "nt":
+                import winsound
+                winsound.Beep(1000, 120)
+            elif sd is not None and np is not None:
+                sample_rate = 44100
+                duration = 0.15
+                freq = 1000.0
+                samples = np.sin(2 * np.pi * freq * np.arange(int(sample_rate * duration)) / sample_rate).astype(np.float32)
+                sd.play(samples, samplerate=sample_rate, blocking=False)
+            else:
+                sys.stdout.write("\a")
+                sys.stdout.flush()
+        except Exception:
+            pass
 
     def show_count():
         goal_text = f" / {args.goal}" if args.goal is not None else ""
@@ -194,6 +225,7 @@ def main():
                         if triggered:
                             count += 1
                             show_count()
+                            play_beep()
                         continue
 
                     if event.type != ecodes.EV_KEY:
@@ -203,6 +235,7 @@ def main():
                     if increment_code is not None and event.code == increment_code:
                         count += 1
                         show_count()
+                        play_beep()
                     elif decrement_code and event.code == decrement_code:
                         count = max(0, count - 1)
                         show_count()

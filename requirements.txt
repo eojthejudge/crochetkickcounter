@@ -1,1 +1,3 @@
 evdev
+numpy
+sounddevice

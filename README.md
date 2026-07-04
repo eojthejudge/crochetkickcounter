@@ -42,6 +42,12 @@ The default behavior is now:
 - `--axis-threshold 10`
 - `--axis-direction positive`
 
+To hear a short beep whenever the counter increases, run:
+
+```bash
+python3 crochet_counter.py --audio
+```
+
 While the counter is running, you can type commands into the terminal:
 - `+`, `inc`, `i`: increment
 - `-`, `dec`, `d`: decrement
