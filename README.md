@@ -1,17 +1,25 @@
 # Crochet Kick Counter
 
-A simple Linux counter for crocheting that increments when a USB Saitek rudder pedal button is pressed.
+A cross-platform counter for crocheting that increments from a USB pedal or game controller.
 
 ## Setup
 
 1. Install Python 3 if not already installed.
-2. Install the dependency:
+2. Install the dependencies for your platform:
+
+Linux:
 
 ```bash
-python3 -m pip install evdev
+python3 -m pip install -r requirements.txt
 ```
 
-On Debian/Ubuntu you can also install system package:
+Windows:
+
+```powershell
+py -m pip install -r requirements.txt
+```
+
+If you are on Linux and want the raw input backend, you can also install the system package:
 
 ```bash
 sudo apt install python3-evdev
@@ -25,20 +33,27 @@ List input devices:
 python3 crochet_counter.py --list
 ```
 
-Run the counter with an explicit event device path:
+Linux example with an explicit event device path:
 
 ```bash
 python3 crochet_counter.py --device /dev/input/event3
 ```
 
-Or just run the script directly with the default axis settings for your pedal:
+Windows example with a joystick index:
+
+```powershell
+py crochet_counter.py --device 0
+```
+
+Or just run the script directly with the default settings:
 
 ```bash
 python3 crochet_counter.py
 ```
 
 The default behavior is now:
-- `--axis ABS_Y`
+- `--axis ABS_Y` on Linux
+- `--axis 0` on Windows
 - `--axis-threshold 10`
 - `--axis-direction positive`
 
@@ -56,13 +71,19 @@ While the counter is running, you can type commands into the terminal:
 - `status`, `p`: print current count
 - `quit`, `exit`, `q`: stop the program
 
-If the pedal button is not `BTN_0`, set the button explicitly using the event code name from the device output:
+If the pedal button is not `BTN_0`, set the button explicitly using the event code name from the device output on Linux:
 
 ```bash
 python3 crochet_counter.py --button BTN_1
 ```
 
-If the pedal has no button and only reports axis motion, use `--axis` instead. Start by running:
+On Windows, use a numeric button index instead, for example:
+
+```powershell
+py crochet_counter.py --button 0
+```
+
+If the pedal has no button and only reports axis motion, use `--axis` instead. On Linux start by running:
 
 ```bash
 python3 crochet_counter.py --verbose --device /dev/input/eventX
@@ -78,6 +99,7 @@ python3 crochet_counter.py --axis ABS_RUDDER --axis-threshold 10 --axis-directio
 
 ## Notes
 
-- The script reads raw Linux input events from `/dev/input/event*`.
-- You may need to run it with `sudo` or set device permissions so your user can access the event file.
+- On Linux the script reads raw input events from `/dev/input/event*`.
+- On Windows it uses pygame and joystick events instead.
+- You may need to run Linux with `sudo` or set device permissions so your user can access the event file.
 - Press the pedal once to increment the count. Use Ctrl+C to stop.

@@ -1,3 +1,4 @@
-evdev
+evdev ; platform_system == "Linux"
+pygame ; platform_system == "Windows"
 numpy
 sounddevice
